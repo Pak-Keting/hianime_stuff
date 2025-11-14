@@ -14,7 +14,6 @@ def localize_m3u8(m3u8: str, video_path: str) -> str:
 def get_segment_links(m3u8: str) -> list:
     return [i for i in m3u8.split() if "https://" in i]
 
-
 def get_segment_filenames_fixed_extension(m3u8: str) -> list:
     return [Path(i).stem + ".ts" for i in m3u8.split() if "https://" in i]
 
