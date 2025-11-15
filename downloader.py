@@ -75,12 +75,14 @@ import os
 async def main():
     m3u8 = open("../samples/index-f3-v1-a1.m3u8").read()
     localized_m3u8 = hls_tools.localize_m3u8(m3u8, os.getcwd())
+    with open("./local.m3u8",'w') as f:
+        f.write(localized_m3u8)
+        
     segment_links =  hls_tools.get_segment_links(m3u8)
     segment_filenames = hls_tools.get_segment_filenames_fixed_extension(m3u8)
-
     # async with aiohttp.ClientSession() as session:
     #     tasks = [download_segment(session, url, filename) for url, filename in zip(segment_links, segment_filenames)]
     #     await asyncio.gather(*tasks)
-    print(localized_m3u8)
+    
         
 asyncio.run(main())

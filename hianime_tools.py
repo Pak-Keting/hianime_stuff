@@ -7,10 +7,10 @@ def parse_episode_list(html: str) -> list:
     
     # find all the <a> tags with class 'ssl-item ep-item'
     for a in soup.find_all("a", class_="ep-item"):
-        title = a.get("title")
-        data_number = a.get("data-number")
-        data_id = a.get("data-id")
-        href = a.get("href")
+        title: str = a.get("title")
+        data_number: str = a.get("data-number")
+        data_id: str = a.get("data-id")
+        href: str = a.get("href")
     
         episodes.append({
             "title": title,
@@ -23,18 +23,16 @@ def parse_episode_list(html: str) -> list:
 
 
 def parse_servers(html: str) -> list:
-    results = {}
+    results: dict = {}
     soup = BeautifulSoup(html, "html.parser")
     for block in soup.select("div.ps_-block-sub"):
         title_div = block.select_one(".ps__-title")
-        language = title_div.get_text().replace(':','')
-        results[language] = [] # results["SUB"] = [{HD-1:dataId}]
-    
+        language: str = title_div.get_text().replace(':','')
+        results[language]: list = [] # results["SUB"] = [{HD-1:dataId}]
         
-        
-        server_dict = {}
+        server_dict: dict = {}
         for item in block.select(".server-item"):
-            server = item.select_one("a").get_text()
+            server: str = item.select_one("a").get_text()
             server_dict[server] = item.get("data-id")
         results[language].append(server_dict)
 
@@ -43,7 +41,7 @@ def parse_servers(html: str) -> list:
 
 
 
-if __name__ == "__main__":
+def test() -> None:
     import requests as r
     html: str = r.get("https://hianime.to/ajax/v2/episode/list/504").json().get("html")
     episodes: list = parse_episode_list(html)
@@ -55,3 +53,6 @@ if __name__ == "__main__":
     html = r.get("https://hianime.to/ajax/v2/episode/servers?episodeId="+epId).json().get("html")
     servers = parse_servers(html)
     print(servers)
+
+if __name__ == "__main__":
+    test()
