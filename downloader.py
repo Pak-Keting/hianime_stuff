@@ -1,11 +1,12 @@
 # ffmpeg -fflags +genpts -i local.m3u8 -c copy -avoid_negative_ts make_zero 
 
-
+import argparse
 import asyncio
 import aiohttp
 import hls_tools
 
-COLORS = {
+# just a simple ansi terminal color here, it's rather crude
+COLORS: dict = {
     "BLACK": "\033[0;30m",
     "RED": "\033[0;31m",
     "GREEN": "\033[0;32m",
@@ -32,24 +33,25 @@ COLORS = {
     "END": "\033[0m",
 }
 
-MAX_CONCURRENT_DOWNLOADS = 10
+MAX_CONCURRENT_DOWNLOADS: int = 10
 semaphore = asyncio.Semaphore(MAX_CONCURRENT_DOWNLOADS)
 
-MAX_RETRIES = 10
-TIMEOUT_DURATION = 30
+MAX_RETRIES: int = 10
+TIMEOUT_DURATION: int = 30
 
-async def download_segment(session, url, filename):
+async def download_segment(session, url: str, filename: str) -> None:
     async with semaphore:
         for attempt in range(1, MAX_RETRIES+1):
             try:
                 async with asyncio.timeout(TIMEOUT_DURATION):
-                    async with session.get(url, headers={"referer":"https://megacloud.blog/"}) as resp:
+                    async with session.get(url,
+                                           timeout=aiohttp.ClientTimeout(total=TIMEOUT_DURATION),
+                                           headers={"referer":"https://megacloud.blog/"}) as resp:
                         if resp.status != 200:
                             raise Exception(f"Server return bad status : {resp.status}")
-                        #print(f"DEBUG: requesting {url}")
                         data = await resp.read()
-                        #print(f"DEBUG: RESPONDED")
                         
+                        # it's probably a good idea to separate this writing part and just return the data. we'll see.
                         try:
                             with open(filename, 'wb') as f:
                                 f.write(data)
@@ -72,7 +74,7 @@ async def download_segment(session, url, filename):
 
 
 import os
-async def main():
+async def test() -> None:
     m3u8 = open("../samples/index-f3-v1-a1.m3u8").read()
     localized_m3u8 = hls_tools.localize_m3u8(m3u8, os.getcwd())
     with open("./local.m3u8",'w') as f:
@@ -83,6 +85,11 @@ async def main():
     # async with aiohttp.ClientSession() as session:
     #     tasks = [download_segment(session, url, filename) for url, filename in zip(segment_links, segment_filenames)]
     #     await asyncio.gather(*tasks)
-    
-        
-asyncio.run(main())
+
+async def main() -> None:
+    parser = argparse.ArgumentParser(prog="hianime-dl")
+    parser.add_argument("link")
+    parser.add_argument("-q", "--quality", type=int, default=2)
+
+if __name__ == "__main__":
+    asyncio.run(test())

@@ -38,12 +38,16 @@ def parse_servers(html: str) -> list:
 
     return results
 
+# parse the embed link that then can be fed to megacloud.py to extract the m3u8 and sub links
+def parse_sources(sourceId: int) -> str:
+    pass
+
 
 
 
 def test() -> None:
     import requests as r
-    html: str = r.get("https://hianime.to/ajax/v2/episode/list/504").json().get("html")
+    html: str = r.get("https://hianime.to/ajax/v2/episode/list/552").json().get("html")
     episodes: list = parse_episode_list(html)
     for ep in episodes:
         print(ep)
