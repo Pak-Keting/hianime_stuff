@@ -28,7 +28,7 @@ def parse_servers(html: str) -> list:
     for block in soup.select("div.ps_-block-sub"):
         title_div = block.select_one(".ps__-title")
         language: str = title_div.get_text().replace(':','')
-        results[language]: list = [] # results["SUB"] = [{HD-1:dataId}]
+        results[language]: list = [] # example: results["SUB"] = [{HD-1:dataId}]
         
         server_dict: dict = {}
         for item in block.select(".server-item"):
@@ -38,8 +38,20 @@ def parse_servers(html: str) -> list:
 
     return results
 
-# parse the embed link that then can be fed to megacloud.py to extract the m3u8 and sub links
-def parse_sources(sourceId: int) -> str:
+
+def parse_season_data(html: str) -> dict:
+    soup = BeautifulSoup(html, "html.parser")
+    os_item = soup.select("a.os-item")
+
+    season_data: dict = {}
+    for i in os_item:
+        season_data[i.select_one("div.title").get_text()] = i.get("href")
+    return season_data
+
+
+
+# get the embed link that then can be fed to megacloud.py to extract the m3u8 and sub links
+def get_sources(sourceId: int) -> str:
     pass
 
 
