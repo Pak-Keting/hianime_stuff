@@ -23,18 +23,17 @@ def parse_episode_list(html: str) -> list:
 
 
 def parse_servers(html: str) -> list:
-    results: dict = {}
+    results: dict = {} # example: results["SUB"] = [{HD-1:dataId}]
     soup = BeautifulSoup(html, "html.parser")
     for block in soup.select("div.ps_-block-sub"):
         title_div = block.select_one(".ps__-title")
         language: str = title_div.get_text().replace(':','')
-        results[language]: list = [] # example: results["SUB"] = [{HD-1:dataId}]
         
         server_dict: dict = {}
         for item in block.select(".server-item"):
             server: str = item.select_one("a").get_text()
             server_dict[server] = item.get("data-id")
-        results[language].append(server_dict)
+        results[language] = server_dict
 
     return results
 
