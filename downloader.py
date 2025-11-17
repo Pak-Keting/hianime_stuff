@@ -37,31 +37,31 @@ MAX_CONCURRENT_DOWNLOADS: int = 10
 semaphore = asyncio.Semaphore(MAX_CONCURRENT_DOWNLOADS)
 
 MAX_RETRIES: int = 10
-TIMEOUT_DURATION: int = 30
+TIMEOUT_DURATION: int = 10
 
 async def download_segment(session, url: str, filename: str) -> None:
     async with semaphore:
         for attempt in range(1, MAX_RETRIES+1):
             try:
-                async with asyncio.timeout(TIMEOUT_DURATION):
-                    async with session.get(url,
-                                           timeout=aiohttp.ClientTimeout(total=TIMEOUT_DURATION),
-                                           headers={"referer":"https://megacloud.blog/"}) as resp:
-                        if resp.status != 200:
-                            raise Exception(f"Server return bad status : {resp.status}")
-                        data = await resp.read()
-                        
-                        # it's probably a good idea to separate this writing part and just return the data. we'll see.
-                        try:
-                            with open(filename, 'wb') as f:
-                                f.write(data)
-                            print(f"Done writing data to {filename}")
-                            return
-                        except OSError as e:
-                            if e.errno == errno.ENOSPC:  # No space left on device
-                                raise RuntimeError(f"Disk full! Cannot write {filename}") from e
-                            else:
-                                raise  # re-raise other OSErrors
+                async with session.get(url,
+                                       timeout=aiohttp.ClientTimeout(total=TIMEOUT_DURATION*3,
+                                                                     connect=TIMEOUT_DURATION),
+                                       headers={"referer":"https://megacloud.blog/"}) as resp:
+                    if resp.status != 200:
+                        raise Exception(f"Server return bad status : {resp.status}")
+                    data = await resp.read()
+                    
+                    # it's probably a good idea to separate this writing part and just return the data. we'll see.
+                    try:
+                        with open(filename, 'wb') as f:
+                            f.write(data)
+                        print(f"Done writing data to {filename}")
+                        return
+                    except OSError as e:
+                        if e.errno == errno.ENOSPC:  # No space left on device
+                            raise RuntimeError(f"Disk full! Cannot write {filename}") from e
+                        else:
+                            raise  # re-raise other OSErrors
                         
             except asyncio.TimeoutError:
                 print(f"{COLORS['YELLOW']}[{attempt}/{MAX_RETRIES} Timeout] {filename}{COLORS['END']}")
@@ -82,9 +82,9 @@ async def test() -> None:
         
     segment_links =  hls_tools.get_segment_links(m3u8)
     segment_filenames = hls_tools.get_segment_filenames_fixed_extension(m3u8)
-    # async with aiohttp.ClientSession() as session:
-    #     tasks = [download_segment(session, url, filename) for url, filename in zip(segment_links, segment_filenames)]
-    #     await asyncio.gather(*tasks)
+    async with aiohttp.ClientSession() as session:
+        tasks = [download_segment(session, url, filename) for url, filename in zip(segment_links, segment_filenames)]
+        await asyncio.gather(*tasks)
 
 async def main() -> None:
     parser = argparse.ArgumentParser(prog="hianime-dl")
