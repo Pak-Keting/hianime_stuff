@@ -1,9 +1,15 @@
 # ffmpeg -fflags +genpts -i local.m3u8 -c copy -avoid_negative_ts make_zero 
 
+from pathlib import Path
+import os
 import argparse
 import asyncio
 import aiohttp
+import ffmpeg
+
 import hls_tools
+import hianime_tools
+from megacloud import Megacloud
 
 # just a simple ansi terminal color here, it's rather crude
 COLORS: dict = {
@@ -44,14 +50,14 @@ async def download_segment(session, url: str, filename: str) -> None:
         for attempt in range(1, MAX_RETRIES+1):
             try:
                 async with session.get(url,
-                                       timeout=aiohttp.ClientTimeout(total=TIMEOUT_DURATION*3,
+                                       timeout=aiohttp.ClientTimeout(total=TIMEOUT_DURATION*2,
                                                                      connect=TIMEOUT_DURATION),
                                        headers={"referer":"https://megacloud.blog/"}) as resp:
                     if resp.status != 200:
                         raise Exception(f"Server return bad status : {resp.status}")
                     data = await resp.read()
                     
-                    # it's probably a good idea to separate this writing part and just return the data. we'll see.
+                    # it probably a good idea to separate this writing part and just return the data. we'll see.
                     try:
                         with open(filename, 'wb') as f:
                             f.write(data)
@@ -72,8 +78,23 @@ async def download_segment(session, url: str, filename: str) -> None:
                 
         print(f"{COLORS['RED']}FAILED TO DOWNLOAD {filename}{COLORS['END']}")
 
+async def async_fetch_json(url, **kwargs):
+    async with aiohttp.ClientSession() as session:
+        async with session.get(url, **kwargs) as resp:
+            if resp.status != 200:
+                raise Exception(f"Server return bad status : {resp.status}")
+            return await resp.json(content_type=None) # I'll fix this later
 
-import os
+# I hard-coded the referer here, probably not a good practice there
+async def async_fetch_http(url, **kwargs):
+    async with aiohttp.ClientSession() as session:
+        async with session.get(url, headers={"referer":"https://megacloud.blog/"}, **kwargs) as resp:
+            if resp.status != 200:
+                raise Exception(f"Server return bad status : {resp.status}")
+            return await resp.read() # I'll fix this later
+
+
+
 async def test() -> None:
     m3u8 = open("../samples/index-f3-v1-a1.m3u8").read()
     localized_m3u8 = hls_tools.localize_m3u8(m3u8, os.getcwd())
@@ -87,9 +108,82 @@ async def test() -> None:
         await asyncio.gather(*tasks)
 
 async def main() -> None:
+    HIANIME_BASE = "https://hianime.to"
+
     parser = argparse.ArgumentParser(prog="hianime-dl")
     parser.add_argument("link")
     parser.add_argument("-q", "--quality", type=int, default=2)
+    parser.add_argument("episode", type=int)
+
+
+    # For now, I'll make it only take the episode link as argument and download HD-1 and eng subs.
+    # I'll add more stuff later on (or never)
+    args = parser.parse_args()
+    episode_url = args.link
+    quality = args.quality
+
+    episodeId = episode_url[episode_url.find('=')+1:] # crude way of getting the episodeId
+    episode = "EP"+str('{:02d}'.format(args.episode)) # episode count, like EP12. I'll make it automated later
+
+    servers_html = await async_fetch_json(HIANIME_BASE+'/ajax/v2/episode/servers?episodeId='+str(episodeId))
+    servers_html = servers_html.get("html")
+    servers = hianime_tools.parse_servers(servers_html)
+    
+    SUB = servers.get("SUB")
+    HD_1 = SUB.get("HD-1")
+    
+    if HD_1 == None:
+        print("HD-1 is not available, it's probably a new upload. HD-2 are slow and often block auto download. Please wait a while, HD-1 might get uploaded soon")
+        exit()
+    
+    embed_link = await async_fetch_json(HIANIME_BASE+"/ajax/v2/episode/sources?id="+str(HD_1))
+    embed_link = embed_link.get("link")
+
+    m = Megacloud(embed_link)
+    megacloud_source = await m.extract()
+
+
+
+    m3u8_link    = megacloud_source.get("sources")[0].get("file")
+    eng_sub_link = megacloud_source.get("tracks")[0].get("file")
+
+    print("selected quality: "+str(quality))
+    print("fetching m3u8...")
+    m3u8_link = m3u8_link[:m3u8_link.rfind('/')]+f"/index-f{args.quality}-v1-a1.m3u8" # this need to be fixed later, some show doesn't have format, only index-v1-a1.m3u8
+    m3u8 = await async_fetch_http(m3u8_link)
+    m3u8 = m3u8.decode()
+
+    print(f"{eng_sub_link} {m3u8_link} {episode}")
+    # download eng sub
+    print("downloading sub...")
+    with open(episode+".vtt",'wb') as f:
+        data = await async_fetch_http(eng_sub_link)
+        f.write(data)
+
+    # generate and save local m3u8 on working directory
+    localized_m3u8 = hls_tools.localize_m3u8(m3u8, os.getcwd())
+    with open("./local.m3u8",'w') as f:
+        f.write(localized_m3u8)
+
+    # download the segment
+    segment_links =  hls_tools.get_segment_links(m3u8)
+    segment_filenames = hls_tools.get_segment_filenames_fixed_extension(m3u8)
+    async with aiohttp.ClientSession() as session:
+        tasks = [download_segment(session, url, filename) for url, filename in zip(segment_links, segment_filenames)]
+        await asyncio.gather(*tasks)
+
+    out = (
+        ffmpeg
+        .input("local.m3u8", fflags="+genpts")
+        .output(episode+".mp4", c="copy", avoid_negative_ts="make_zero")
+    )
+    try:
+        ffmpeg.run(out, quiet=False)
+    except ffmpeg.Error as e:
+        print("FFmpeg failed!")
+        print(e.stderr.decode())   # Full FFmpeg output
+        return
+
 
 if __name__ == "__main__":
-    asyncio.run(test())
+    asyncio.run(main())
