@@ -1,3 +1,4 @@
+import re
 from pathlib import Path
 
 def localize_m3u8(m3u8: str, video_path: str) -> str:
@@ -36,6 +37,36 @@ def is_valid_ts(filename: str) -> bool:
             return False
 
     return True
+
+
+def parse_master_m3u8(master) -> list:
+    # regex to capture STREAM-INF blocks but skip I-FRAME
+    pattern = re.compile(
+        r'(?<!I-FRAME-)#EXT-X-STREAM-INF:([^\n]+)\n([^\n]+)'
+    )
+
+    # regex to extract key=value pairs
+    kv_pattern = re.compile(r'(\w+)=(".*?"|[^,]+)')
+
+    results = []
+
+    for attr_str, uri in pattern.findall(master):
+        attrs = {}
+        for key, val in kv_pattern.findall(attr_str):
+            val = val.strip('"')
+            if key == "RESOLUTION" and 'x' in val:
+                w, h = val.split('x')
+                val = (int(w), int(h))
+            elif key == "BANDWIDTH":
+                val = int(val)
+            elif key == "FRAME-RATE":
+                val = float(val)
+            attrs[key.lower()] = val
+
+        attrs["uri"] = uri.strip()
+        results.append(attrs)
+
+    return results
     
 
 
