@@ -113,7 +113,7 @@ async def main() -> None:
     parser = argparse.ArgumentParser(prog="hianime-dl")
     parser.add_argument("link")
     parser.add_argument("-q", "--quality", type=int, default=2)
-    parser.add_argument("episode", type=int)
+    #parser.add_argument("episode", type=int)
 
 
     # For now, I'll make it only take the episode link as argument and download HD-1 and eng subs.
@@ -123,11 +123,11 @@ async def main() -> None:
     quality = args.quality
 
     episodeId = episode_url[episode_url.find('=')+1:] # crude way of getting the episodeId
-    episode = "EP"+str('{:02d}'.format(args.episode)) # episode count, like EP12. I'll make it automated later
 
     servers_html = await async_fetch_json(HIANIME_BASE+'/ajax/v2/episode/servers?episodeId='+str(episodeId))
     servers_html = servers_html.get("html")
-    servers = hianime_tools.parse_servers(servers_html)
+    servers, episode  = hianime_tools.parse_servers(servers_html)
+    episode = "EP"+str('{:02d}'.format(int(episode))) # episode count, like EP12
     
     SUB = servers.get("SUB")
     HD_1 = SUB.get("HD-1")
@@ -147,7 +147,8 @@ async def main() -> None:
     m3u8_link    = megacloud_source.get("sources")[0].get("file")
     eng_sub_link = megacloud_source.get("tracks")[0].get("file")
 
-    print("selected quality: "+str(quality))
+    print("downloading episode: "+episode)
+    print("selected quality   : "+str(quality))
     print("fetching m3u8...")
     m3u8_link = m3u8_link[:m3u8_link.rfind('/')]+f"/index-f{args.quality}-v1-a1.m3u8" # this need to be fixed later, some show doesn't have format, only index-v1-a1.m3u8
     m3u8 = await async_fetch_http(m3u8_link)
