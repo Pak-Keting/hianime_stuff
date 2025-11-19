@@ -1,3 +1,4 @@
+import re
 from bs4 import BeautifulSoup
 
 def parse_episode_list(html: str) -> list:
@@ -22,9 +23,14 @@ def parse_episode_list(html: str) -> list:
     return episodes
 
 
-def parse_servers(html: str) -> list:
-    results: dict = {} # example: results["SUB"] = [{HD-1:dataId}]
+def parse_servers(html: str) -> tuple:
     soup = BeautifulSoup(html, "html.parser")
+    
+    # extract episode count
+    text = soup.select_one(".server-notice strong b").get_text(strip=True)
+    episode = re.search(r'\d+', text).group()
+
+    results: dict = {} # example: results["SUB"] = [{HD-1:dataId}]
     for block in soup.select("div.ps_-block-sub"):
         title_div = block.select_one(".ps__-title")
         language: str = title_div.get_text().replace(':','')
@@ -35,7 +41,7 @@ def parse_servers(html: str) -> list:
             server_dict[server] = item.get("data-id")
         results[language] = server_dict
 
-    return results
+    return results,episode
 
 
 def parse_season_data(html: str) -> dict:
