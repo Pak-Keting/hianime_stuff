@@ -19,7 +19,7 @@ def parse_episode_list(html: str) -> list:
             "title": title,
             "episode": data_number,
             "episodeId": data_id,
-            "link": href
+            "link": BASE_LINK+href
         })
 
     return episodes
