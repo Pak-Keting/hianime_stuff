@@ -39,18 +39,18 @@ COLORS: dict = {
     "END": "\033[0m",
 }
 
-MAX_CONCURRENT_DOWNLOADS: int = 10
+MAX_CONCURRENT_DOWNLOADS: int = 5
 semaphore = asyncio.Semaphore(MAX_CONCURRENT_DOWNLOADS)
 
-MAX_RETRIES: int = 10
-TIMEOUT_DURATION: int = 10
+MAX_RETRIES: int = 100
+TIMEOUT_DURATION: int = 2
 
 async def download_segment(session, url: str, filename: str) -> None:
     async with semaphore:
         for attempt in range(1, MAX_RETRIES+1):
             try:
                 async with session.get(url,
-                                       timeout=aiohttp.ClientTimeout(total=TIMEOUT_DURATION*2,
+                                       timeout=aiohttp.ClientTimeout(total=TIMEOUT_DURATION*10,
                                                                      connect=TIMEOUT_DURATION),
                                        headers={"referer":"https://megacloud.blog/"}) as resp:
                     if resp.status != 200:
