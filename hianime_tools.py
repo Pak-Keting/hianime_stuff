@@ -1,6 +1,8 @@
 import re
 from bs4 import BeautifulSoup
 
+BASE_LINK = "https://hianime.to"
+
 def parse_episode_list(html: str) -> list:
     soup = BeautifulSoup(html, "html.parser")
     
