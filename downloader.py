@@ -183,7 +183,13 @@ async def main() -> None:
     except ffmpeg.Error as e:
         print("FFmpeg failed!")
         print(e.stderr.decode())   # Full FFmpeg output
+        exit(1)
         return
+
+    # delete segments after ffmpeg done merging (only if ffmpeg exited successfully)
+    for file in Path().glob("seg-*"):
+        print("Deleting "+file)
+        file.unlink()
 
 
 if __name__ == "__main__":
