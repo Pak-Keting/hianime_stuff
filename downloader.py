@@ -188,7 +188,7 @@ async def main() -> None:
 
     # delete segments after ffmpeg done merging (only if ffmpeg exited successfully)
     for file in Path().glob("seg-*"):
-        print("Deleting "+file)
+        print("Deleting "+str(file))
         file.unlink()
 
 
