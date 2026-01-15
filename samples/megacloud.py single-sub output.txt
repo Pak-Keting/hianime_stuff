@@ -1,0 +1,19 @@
+{
+    'sources': [{
+        'file': 'https://sunshinerays93.live/_v7/92dc696da6f97b76d606e08d8488f4564d4f5d633f1de5cc9dc5875df10afd18002852e5a5b43f068a9331b1066b4b4edf9bc44694304843417222e6877eaa712f79b6ac7fb9f0e9375bcc3c5e9f53ee109010f023d84239c6552c5e8d12fde4309cfa606b501a3d5ce8526eb69d57faf8c889bcc682daf5d4419a0f883975eb/master.m3u8',
+        'type': 'hls'
+    }],
+    'tracks': [{
+        'file': 'https://mgstatics.xyz/subtitle/8e26018062df32576f7f39cee5c9cad3/8e26018062df32576f7f39cee5c9cad3.vtt',
+        'label': 'English',
+        'kind': 'captions',
+        'default': True
+    }, {
+        'file': 'https://mgstatics.xyz/thumbnails/64eea0103d24f13c6265c00efd194367/thumbnails.vtt',
+        'kind': 'thumbnails'
+    }],
+    'encrypted': False,
+    'intro': (0, 0),
+    'outro': (1362, 1451),
+    'server': 4
+}

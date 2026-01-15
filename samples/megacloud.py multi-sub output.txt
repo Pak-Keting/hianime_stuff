@@ -1,0 +1,51 @@
+{
+    'sources': [{
+        'file': 'https://stormshade84.live/_v7/abceb95f22245169c48e75c00642f0ac6fc739ea2fe13113a9443b9efc246448da540d53ecf5725c24905042e675b5acef8351cfc61f514f433122234617a9d724519e0d600e52fe53a67f982bac1084274734ab7774ffcd38d15b88cceee3ce4875446204f4669e1bd685ac66f8b933bb05b20144a86a14a01bc72a6be32be9/master.m3u8',
+        'type': 'hls'
+    }],
+    'tracks': [{
+        'file': 'https://mgstatics.xyz/subtitle/292d8744a772c1c2c8068a7676008927/292d8744a772c1c2c8068a7676008927.vtt',
+        'label': 'Arabic',
+        'kind': 'captions'
+    }, {
+        'file': 'https://mgstatics.xyz/subtitle/6818e9ec3272a4c8bfd9321aa5ced2dc/6818e9ec3272a4c8bfd9321aa5ced2dc.vtt',
+        'label': 'English',
+        'kind': 'captions',
+        'default': True
+    }, {
+        'file': 'https://mgstatics.xyz/subtitle/f9b9ad87d6a2232d72e3d683c81a4b71/f9b9ad87d6a2232d72e3d683c81a4b71.vtt',
+        'label': 'French',
+        'kind': 'captions'
+    }, {
+        'file': 'https://mgstatics.xyz/subtitle/cf3d7bda588cebd2700567c30c4ce4da/cf3d7bda588cebd2700567c30c4ce4da.vtt',
+        'label': 'German',
+        'kind': 'captions'
+    }, {
+        'file': 'https://mgstatics.xyz/subtitle/adb2a4318ccc105f667e6fd81cb0bc11/adb2a4318ccc105f667e6fd81cb0bc11.vtt',
+        'label': 'Italian',
+        'kind': 'captions'
+    }, {
+        'file': 'https://mgstatics.xyz/subtitle/a6cf8e1323fc67872170bee1d7e0f120/a6cf8e1323fc67872170bee1d7e0f120.vtt',
+        'label': 'Portuguese',
+        'kind': 'captions'
+    }, {
+        'file': 'https://mgstatics.xyz/subtitle/44c844d494b2fbecce502ae588a48748/44c844d494b2fbecce502ae588a48748.vtt',
+        'label': 'Russian',
+        'kind': 'captions'
+    }, {
+        'file': 'https://mgstatics.xyz/subtitle/43213f7dc3b3041bdeaf70704d854545/43213f7dc3b3041bdeaf70704d854545.vtt',
+        'label': 'Spanish',
+        'kind': 'captions'
+    }, {
+        'file': 'https://mgstatics.xyz/subtitle/81259fe04bb29b1ffaf6303dc084b873/81259fe04bb29b1ffaf6303dc084b873.vtt',
+        'label': 'Spanish - Espanol',
+        'kind': 'captions'
+    }, {
+        'file': 'https://mgstatics.xyz/thumbnails/6f72b216d1c1cca7f7b190ebc7fb19fb/thumbnails.vtt',
+        'kind': 'thumbnails'
+    }],
+    'encrypted': False,
+    'intro': (196, 285),
+    'outro': (1376, 1464),
+    'server': 4
+}
