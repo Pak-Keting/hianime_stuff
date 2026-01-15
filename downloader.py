@@ -145,7 +145,16 @@ async def main() -> None:
 
 
     m3u8_link    = megacloud_source.get("sources")[0].get("file")
-    eng_sub_link = megacloud_source.get("tracks")[0].get("file")
+    #eng_sub_link = megacloud_source.get("tracks")[0].get("file") # overhauled
+    eng_sub_link = None
+
+    megacloud_subs_dict = megacloud_source.get("tracks")
+    for i in megacloud_subs_dict:
+        if(i.get("label") == "English"):
+            eng_sub_link = i.get("file")
+            break
+    if(eng_sub_link == None):
+        print(f"{COLORS['YELLOW']}No English subtitle were found! Skipping subtitle download.{COLORS['END']}")
 
     print("downloading episode: "+episode)
     print("selected quality   : "+str(quality))
@@ -155,11 +164,13 @@ async def main() -> None:
     m3u8 = m3u8.decode()
 
     print(f"{eng_sub_link} {m3u8_link} {episode}")
+
     # download eng sub
-    print("downloading sub...")
-    with open(episode+".vtt",'wb') as f:
-        data = await async_fetch_http(eng_sub_link)
-        f.write(data)
+    if(eng_sub_link != None):
+        print("downloading sub...")
+        with open(episode+".vtt",'wb') as f:
+            data = await async_fetch_http(eng_sub_link)
+            f.write(data)
 
     # generate and save local m3u8 on working directory
     localized_m3u8 = hls_tools.localize_m3u8(m3u8, os.getcwd())
