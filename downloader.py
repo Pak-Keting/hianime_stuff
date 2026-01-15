@@ -197,10 +197,12 @@ async def main() -> None:
         exit(1)
         return
 
-    # delete segments after ffmpeg done merging (only if ffmpeg exited successfully)
+    # delete local.m3u8 and segments after ffmpeg done merging (only if ffmpeg exited successfully)
     for file in Path().glob("seg-*"):
         print("Deleting "+str(file))
         file.unlink()
+    print("Deleting local.m3u8")
+    os.unlink("./local.m3u8")
 
 
 if __name__ == "__main__":
