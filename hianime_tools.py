@@ -55,17 +55,26 @@ def parse_season_data(html: str) -> dict:
         season_data[i.select_one("div.title").get_text()] = i.get("href")
     return season_data
 
+def parse_search_result(html: str) -> dict:
+    soup = BeautifulSoup(html, "html.parser")
+    
+    search_result = {
+        title.get_text(strip=True): link["href"]
+        for title, link in zip(
+            soup.find_all("div", class_="alias-name"),
+            soup.find_all("a", class_="nav-item")
+        )
+    }
+
+    return search_result
+    
+    
 
 
-# get the embed link that then can be fed to megacloud.py to extract the m3u8 and sub links
-def get_sources(sourceId: int) -> str:
-    pass
 
 
 
-
-def test() -> None:
-    import requests as r
+def test_episode_list_and_servers() -> None:
     html: str = r.get("https://hianime.to/ajax/v2/episode/list/552").json().get("html")
     episodes: list = parse_episode_list(html)
     for ep in episodes:
@@ -77,5 +86,10 @@ def test() -> None:
     servers = parse_servers(html)
     print(servers)
 
+def test_search() -> None:
+    parse_search_result(r.get(BASE_LINK + "/ajax/search/suggest?keyword=" + "overlord").json().get("html"))
+
+
 if __name__ == "__main__":
-    test()
+    import requests as r
+    test_search()
