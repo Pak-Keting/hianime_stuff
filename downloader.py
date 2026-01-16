@@ -1,9 +1,8 @@
-# ffmpeg -fflags +genpts -i local.m3u8 -c copy -avoid_negative_ts make_zero 
-
 from pathlib import Path
 import os
 import argparse
 import asyncio
+
 import aiohttp
 import ffmpeg
 
@@ -116,13 +115,13 @@ async def main() -> None:
     #parser.add_argument("episode", type=int)
 
 
-    # For now, I'll make it only take the episode link as argument and download HD-1 and eng subs.
+    # For now, I'll make it only take the episode link as argument, download HD-1 and eng subs.
     # I'll add more stuff later on (or never)
     args = parser.parse_args()
     episode_url = args.link
     quality = args.quality
 
-    episodeId = episode_url[episode_url.find('=')+1:] # crude way of getting the episodeId
+    episodeId = episode_url[episode_url.find('=')+1:] # crude way of getting the episodeId from link
 
     servers_html = await async_fetch_json(HIANIME_BASE+'/ajax/v2/episode/servers?episodeId='+str(episodeId))
     servers_html = servers_html.get("html")
