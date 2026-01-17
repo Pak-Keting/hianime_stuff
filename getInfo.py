@@ -8,9 +8,8 @@ import requests as r
 
 
 
-link: str = sys.argv[1]
-
 # crude argument handling
+link: str = sys.argv[1]
 if not ("https://hianime.to/watch/" in link):
     print("Make sure the provided link are as followed: https://hianime.to/watch/<your_show_here>\nexiting..")
     exit()
@@ -18,12 +17,32 @@ if not ("https://hianime.to/watch/" in link):
 html = r.get(link).text
 soup = BeautifulSoup(html, "html.parser")
 
+title = soup.find("div", class_="anisc-detail").find("a").get("title")
+print(f"\n{title}\n")
+
 span_schedule_date = soup.find("span", id="schedule-date")
 if(span_schedule_date == None):
     print("This show is not being aired currently!\nexiting..")
     exit()
+raw_time_str = span_schedule_date.get("data-value")
 
-raw_time = span_schedule_date.get("data-value")
-local_dt = datetime.strptime(raw_time, "%Y-%m-%d %H:%M:%S").replace(tzinfo=timezone.utc)
 
-print(local_dt.astimezone())
+dt = datetime.strptime(raw_time_str, "%Y-%m-%d %H:%M:%S").replace(tzinfo=timezone.utc)
+local_dt = dt.astimezone()
+now = datetime.now(timezone.utc).astimezone()
+
+day_name = local_dt.strftime("%A")
+time_str = local_dt.strftime("%I:%M %p").lstrip("0")
+date_str = local_dt.strftime("%d %B %Y")
+
+print(f"Uploaded every {day_name} at {time_str}")
+print(f"Next upload is on {date_str}")
+delta = local_dt - now
+if delta.total_seconds() > 0:
+    days = delta.days
+    hours, remainder = divmod(delta.seconds, 3600)
+    minutes = remainder // 60
+
+    print(f"Time until next upload: {days} Days, {hours} Hours, {minutes} Minutes\n")
+else:
+    print("The next upload time has already passed.") # redundant stuff
