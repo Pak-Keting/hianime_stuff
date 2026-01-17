@@ -1,14 +1,17 @@
 #<span data-value="2025-11-16 15:00:00" id="schedule-date"></span>
 
-from bs4 import BeautifulSoup
+import sys
 from datetime import datetime, timezone
+
+from bs4 import BeautifulSoup
 import requests as r
 
 
 
-html: str = open("./samples/hianime/watch_gachiakuta-19785").read()
+# html: str = open("./samples/hianime/watch_gachiakuta-19785").read()
 
-html = r.get("https://hianime.to/watch/jujutsu-kaisen-the-culling-game-part-1-20401").text
+link: str = sys.argv[1]
+html = r.get(link).text
 soup = BeautifulSoup(html, "html.parser")
 
 raw_time = soup.find("span", id="schedule-date").get("data-value")
