@@ -8,14 +8,22 @@ import requests as r
 
 
 
-# html: str = open("./samples/hianime/watch_gachiakuta-19785").read()
-
 link: str = sys.argv[1]
+
+# crude argument handling
+if not ("https://hianime.to/watch/" in link):
+    print("Make sure the provided link are as followed: https://hianime.to/watch/<your_show_here>\nexiting..")
+    exit()
+
 html = r.get(link).text
 soup = BeautifulSoup(html, "html.parser")
 
-raw_time = soup.find("span", id="schedule-date").get("data-value")
-print(raw_time)
-dt = datetime.strptime(raw_time, "%Y-%m-%d %H:%M:%S").replace(tzinfo=timezone.utc)
+span_schedule_date = soup.find("span", id="schedule-date")
+if(span_schedule_date == None):
+    print("This show is not being aired currently!\nexiting..")
+    exit()
 
-print(dt.astimezone())
+raw_time = span_schedule_date.get("data-value")
+local_dt = datetime.strptime(raw_time, "%Y-%m-%d %H:%M:%S").replace(tzinfo=timezone.utc)
+
+print(local_dt.astimezone())
