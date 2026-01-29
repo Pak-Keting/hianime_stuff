@@ -9,6 +9,9 @@ import requests as r
 
 
 # crude argument handling
+if(len(sys.argv) != 2):
+    print(sys.argv[0]+" requires 1 argument!\nexiting..")
+    exit()
 link: str = sys.argv[1]
 if not ("https://hianime.to/watch/" in link):
     print("Make sure the provided link are as followed: https://hianime.to/watch/<your_show_here>\nexiting..")
