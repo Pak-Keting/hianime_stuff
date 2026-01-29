@@ -129,6 +129,8 @@ async def main() -> None:
     episode = "EP"+str('{:02d}'.format(int(episode))) # episode count, like EP12
     
     SUB = servers.get("SUB")
+    if SUB == None:
+        SUB = servers.get("RAW")
     HD_1 = SUB.get("HD-1")
     
     if HD_1 == None:
